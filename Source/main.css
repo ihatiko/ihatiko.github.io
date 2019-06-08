@@ -1,0 +1,18 @@
+.main-div{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+.div-element{
+    border: 2px dashed gray;
+    width: 400px;
+    height: 400px;
+    margin:1px;
+}
+.div-move{
+    background-color: red;
+    position: absolute;
+    width: 396px;
+    height: 396px;
+    border: 2px solid black;
+}
