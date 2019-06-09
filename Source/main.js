@@ -2,6 +2,8 @@ let firstElement = 0;
 let borderSize = 2;
 let ListCoordsElements = [];
 let div_element = document.querySelectorAll('.div-element');
+let moveElement = document.querySelector('.div-move');
+let previous_element = null;
 
 class CoordsElement {
     constructor(divElement){
@@ -17,8 +19,6 @@ function CreateCoordsElements(div_elements){
         ListCoordsElements.push(new CoordsElement(element));
     })
 }
-
-let moveElement = document.querySelector('.div-move');
 
 /**
  * @return {number}
@@ -37,7 +37,7 @@ function GetCoordinateY(event) {
 /**
  * @return {number}
  */
-function GetWatToPoint(event , item) {
+function GetPathToPoint(event , item) {
     return Math.sqrt((Math.pow(GetCoordinateX(event) - item.X, 2) + Math.pow(GetCoordinateY(event) - item.Y, 2)));
 }
 
@@ -47,28 +47,50 @@ function SetPositionToMoveDiv(newRootElement) {
     moveElement.style.top = newRootElement[firstElement].Y + borderSize + 'px';
 }
 
-moveElement.onmousedown = function (event) {
-    event.preventDefault();
-    moveAt(event);
-    document.onmousemove = function (event) {
-        moveAt(event);
-    };
-
-    moveElement.onmouseup = function() {
+function OnMouseUpHandler() {
+    return function () {
         document.onmousemove = null;
         moveElement.onmouseup = null;
-
         let newRootElement = ListCoordsElements.sort(CustomSortToPath);
         SetPositionToMoveDiv(newRootElement);
     };
-};
+}
+
+function CreateHoverToNavigateItem(newRootElement) {
+    if (newRootElement !== previous_element) {
+        previous_element.Element.style.backgroundColor = "#ffffff";
+        newRootElement.Element.style.backgroundColor = "#d6d6d6";
+        previous_element = newRootElement;
+    }
+}
+
+function OnMouseMoveHandler() {
+    return function (event) {
+        moveAt(event);
+        let newRootElement = ListCoordsElements.sort(CustomSortToPath)[firstElement];
+        if(previous_element === null ){
+            previous_element = newRootElement;
+        }
+        CreateHoverToNavigateItem(newRootElement);
+
+    };
+}
+
+function OnMouseDownHandler() {
+    return function (event) {
+        event.preventDefault();
+        moveAt(event);
+        document.onmousemove = OnMouseMoveHandler();
+        moveElement.onmouseup = OnMouseUpHandler();
+    };
+}
 
 function CustomSortToPath(first , second) {
-    if(GetWatToPoint(event , first) > GetWatToPoint(event , second)){
+    if(GetPathToPoint(event , first) > GetPathToPoint(event , second)){
         return 1;
     }
-    if(GetWatToPoint(event , first) < GetWatToPoint(event , second)){
-        return -1
+    if(GetPathToPoint(event , first) < GetPathToPoint(event , second)){
+        return -1;
     }
     return 0;
 }
@@ -84,6 +106,7 @@ function moveAt(event) {
 
 function Init() {
     CreateCoordsElements(div_element);
+    moveElement.onmousedown = OnMouseDownHandler();
 }
 
 Init();
